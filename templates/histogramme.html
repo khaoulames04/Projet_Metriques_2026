@@ -22,22 +22,23 @@
 
     async function init() {
       try {
-        // Récupération des données depuis l'API /paris
         const rows = await fetch('/paris').then(r => r.json());
 
-        // On garde seulement une valeur par jour pour simplifier
-        const daily = [];
-        const seenDates = new Set();
+        // Calculer la température moyenne par jour
+        const dailyTemps = {};
         rows.forEach(p => {
           const date = p.datetime.split('T')[0];
-          if (!seenDates.has(date)) {
-            seenDates.add(date);
-            daily.push([date, Number(p.temperature_c)]);
-          }
+          if (!dailyTemps[date]) dailyTemps[date] = [];
+          dailyTemps[date].push(Number(p.temperature_c));
         });
 
-        drawChart(daily);
-        document.getElementById('status').textContent = `OK — ${daily.length} jours chargés depuis /paris`;
+        const dailyAverage = Object.entries(dailyTemps).map(([date, temps]) => {
+          const avg = temps.reduce((a,b) => a+b, 0) / temps.length;
+          return [date, avg];
+        });
+
+        drawChart(dailyAverage);
+        document.getElementById('status').textContent = `OK — ${dailyAverage.length} jours chargés depuis /paris`;
 
       } catch (e) {
         document.getElementById('status').textContent = 'Erreur: ' + e.message;
@@ -48,11 +49,11 @@
     function drawChart(rows) {
       const data = new google.visualization.DataTable();
       data.addColumn('string', 'Date');
-      data.addColumn('number', 'Température (°C)');
+      data.addColumn('number', 'Température moyenne (°C)');
       data.addRows(rows);
 
       const options = {
-        title: 'Températures prévues à Paris (7 jours)',
+        title: 'Températures moyennes à Paris (7 jours)',
         legend: { position: 'none' },
         hAxis: { title: 'Date' },
         vAxis: { title: '°C' },
