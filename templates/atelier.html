@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Atelier Météo — Vent à Marseille</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    #chartContainer { width: 80%; margin: auto; }
+  </style>
+</head>
+<body>
+  <h1>Vitesse du vent à Marseille — Radar Chart</h1>
+  <div id="chartContainer">
+    <canvas id="atelierChart"></canvas>
+  </div>
+
+  <script>
+    async function fetchWindData() {
+      const res = await fetch('/vent'); // on créera cette API dans app.py
+      const data = await res.json();
+      return data; // [{date:"2026-04-02", windspeed:5}, ...]
+    }
+
+    async function init() {
+      const rows = await fetchWindData();
+      const labels = rows.map(r => r.date);
+      const values = rows.map(r => r.windspeed);
+
+      const ctx = document.getElementById('atelierChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Vitesse du vent (km/h)',
+            data: values,
+            fill: true,
+            backgroundColor: 'rgba(30, 119, 180, 0.2)',
+            borderColor: 'rgba(30, 119, 180, 1)',
+            pointBackgroundColor: 'rgba(30, 119, 180, 1)',
+          }]
+        },
+        options: {
+          scales: {
+            r: {
+              angleLines: { display: true },
+              suggestedMin: 0
+            }
+          }
+        }
+      });
+    }
+
+    init();
+  </script>
+</body>
+</html>
