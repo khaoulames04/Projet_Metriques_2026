@@ -42,6 +42,10 @@ def mongraphique():
 def mon_histogramme():
     return render_template("histogramme.html")
 
+@app.route("/atelier")
+def atelier():
+    return render_template("atelier.html")
+
 # Ne rien mettre après ce commentaire
     
 if __name__ == "__main__":
